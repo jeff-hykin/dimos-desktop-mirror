@@ -14,6 +14,7 @@ type Backend = {
 }
 
 const backends = new Map<string, Backend>()
+const clients = new Map<string, Deno.HttpClient>()
 
 export function socketPath(name: string): string {
     return join(paths.sockets, `${name}.sock`)
@@ -96,13 +97,13 @@ export async function stopBackend(name: string) {
         await backend.process.status.catch(() => {})
     }
     await Deno.remove(backend.socket).catch(() => {})
+    clients.get(backend.socket)?.close()
+    clients.delete(backend.socket)
 }
 
 export async function stopAllBackends() {
     await Promise.all([...backends.keys()].map(stopBackend))
 }
-
-const clients = new Map<string, Deno.HttpClient>()
 
 /** Forward a request to the app's backend over its unix socket. */
 export async function forwardToBackend(name: string, request: Request, path: string): Promise<Response> {
