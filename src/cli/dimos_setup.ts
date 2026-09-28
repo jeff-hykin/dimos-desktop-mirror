@@ -4,7 +4,7 @@ import { Select } from "jsr:@cliffy/prompt@1.0.0-rc.7/select"
 import { join } from "jsr:@std/path@1"
 import { exists } from "../core/paths.ts"
 import { currentRef, gitOrThrow, remoteTags } from "../core/git.ts"
-import { runInteractive } from "../core/proc.ts"
+import { run, runInteractive } from "../core/proc.ts"
 import { compareVersions, newestTag, parseVersion, satisfies } from "../core/version.ts"
 import { desktopManifest } from "../self.ts"
 import { checkDimos, dimosBin, dimosProvider, dimosRepoUrl } from "../dimos/checkout.ts"
@@ -83,9 +83,17 @@ export async function setupDimos(options: DimosSetupOptions): Promise<void> {
     ]
     console.log(`Running dimos's installer: ${args.join(" ")}`)
     const code = await runInteractive("bash", args, { cwd: dir, env: { GIT_LFS_SKIP_SMUDGE: "1" } })
-    if (code != 0 || !exists(dimosBin(dir))) {
+    // judge by the result, not only the exit code: install.sh <=0.0.14 exits 1 even on success
+    // (its EXIT trap ends on a false `[[ $ec -ne 0 ]]`)
+    const works = exists(dimosBin(dir)) &&
+        (await run(join(dir, ".venv", "bin", "python"), ["-c", "import dimos"], { cwd: dir, timeoutMs: 120_000 }))
+                .code == 0
+    if (!works) {
         throw new Error(
             `dimos's installer failed (exit ${code}). Fix the error above and run \`dimos-desktop install\` again; it resumes.`,
         )
+    }
+    if (code != 0) {
+        console.log(`dimos's installer exited ${code}, but dimos imports fine, so carrying on.`)
     }
 }
