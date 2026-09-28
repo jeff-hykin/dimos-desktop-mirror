@@ -1,0 +1,24 @@
+name: build
+
+on:
+    workflow_call:
+
+jobs:
+    compile:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v4
+            - uses: denoland/setup-deno@v2
+              with:
+                  deno-version: v2.x
+            - run: deno task ui:build
+            # deno cross-compiles every target from one machine
+            - run: |
+                  for target in x86_64-unknown-linux-gnu aarch64-unknown-linux-gnu x86_64-apple-darwin aarch64-apple-darwin; do
+                      deno compile -A --include ui/dist --include dimos.yaml --target "$target" -o "build/dimos-desktop-$target" src/main.ts
+                  done
+                  ls -la build
+            - uses: actions/upload-artifact@v4
+              with:
+                  name: binaries
+                  path: build/

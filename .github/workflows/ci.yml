@@ -1,0 +1,67 @@
+name: ci
+
+on:
+    push:
+        branches: [main]
+    pull_request:
+    workflow_dispatch:
+
+jobs:
+    check:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v4
+            - uses: denoland/setup-deno@v2
+              with:
+                  deno-version: v2.x
+            - run: deno fmt --check
+            - run: deno lint
+            - run: deno task check
+            - run: deno task test
+            - run: shellcheck install.sh
+
+    build:
+        uses: ./.github/workflows/build.yml
+
+    # the real installer, end to end, on every GitHub-hosted Linux and macOS runner
+    install:
+        needs: build
+        strategy:
+            fail-fast: false
+            matrix:
+                runner:
+                    - ubuntu-22.04
+                    - ubuntu-24.04
+                    - ubuntu-26.04
+                    - ubuntu-22.04-arm
+                    - ubuntu-24.04-arm
+                    - ubuntu-26.04-arm
+                    - macos-14
+                    - macos-15
+                    - macos-26
+                    - macos-15-intel
+                    - macos-26-intel
+        runs-on: ${{ matrix.runner }}
+        steps:
+            - uses: actions/checkout@v4
+            - uses: actions/download-artifact@v4
+              with:
+                  name: binaries
+                  path: build
+            - run: bash .github/scripts/install_test.sh
+
+    # Desktop installing dimos itself: clone a release and run its scripts/install.sh
+    dimos-install:
+        needs: build
+        runs-on: ubuntu-24.04
+        steps:
+            - uses: actions/checkout@v4
+            - uses: actions/download-artifact@v4
+              with:
+                  name: binaries
+                  path: build
+            - run: bash .github/scripts/dimos_install_test.sh
+              env:
+                  # the web extra is what Desktop needs (the relay); skip CUDA, torch and friends to fit the runner's disk
+                  DIMOS_EXTRAS: web
+                  DIMOS_NO_CUDA: "1"

@@ -1,0 +1,28 @@
+name: release
+
+# Tag vX.Y.Z (matching src/self.ts) and push the tag; this publishes the binaries and install.sh.
+on:
+    push:
+        tags: ["v*"]
+
+permissions:
+    contents: write
+
+jobs:
+    build:
+        uses: ./.github/workflows/build.yml
+
+    publish:
+        needs: build
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v4
+            - name: tag matches the version Desktop reports
+              run: grep -q "version = \"${GITHUB_REF_NAME#v}\"" src/self.ts
+            - uses: actions/download-artifact@v4
+              with:
+                  name: binaries
+                  path: build
+            - run: gh release create "$GITHUB_REF_NAME" build/dimos-desktop-* install.sh --title "$GITHUB_REF_NAME" --generate-notes
+              env:
+                  GH_TOKEN: ${{ github.token }}
