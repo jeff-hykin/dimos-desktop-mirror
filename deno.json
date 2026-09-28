@@ -1,0 +1,30 @@
+{
+    "tasks": {
+        "dev": "deno run -A --watch=src/ src/main.ts serve",
+        "test": "deno test -A src/",
+        "check": "deno check src/main.ts && cd ui && deno install && deno run -A npm:typescript/tsc --noEmit -p .",
+        "ui:build": "cd ui && deno install && deno run -A npm:vite build",
+        "ui:dev": "cd ui && deno install && deno run -A npm:vite",
+        "compile": "deno task ui:build && deno compile -A --include ui/dist --include dimos.yaml -o build/dimos-desktop src/main.ts"
+    },
+    "fmt": {
+        "indentWidth": 4,
+        "semiColons": false,
+        "lineWidth": 120,
+        "exclude": [
+            "ui/dist",
+            "ui/node_modules"
+        ]
+    },
+    "lint": {
+        "exclude": [
+            "ui/dist",
+            "ui/node_modules"
+        ],
+        "rules": {
+            "exclude": [
+                "no-import-prefix"
+            ]
+        }
+    }
+}

@@ -1,0 +1,13 @@
+# What Desktop needs from dimos, and what it offers apps. Format: docs/apps.md
+name: dimos-desktop
+requires:
+    dimos:
+        # milestone 0: dimos has no dimos.yaml yet, so only its version can be checked
+        version: ">=0.0.14"
+provides:
+    apis:
+        app.frontend: 1
+        app.backend: 1
+        api.runs: 1
+        api.relay: 1
+        api.logs: 1
