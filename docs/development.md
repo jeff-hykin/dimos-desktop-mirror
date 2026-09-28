@@ -36,7 +36,7 @@ Only through what dimos 0.0.14 already has, so it needs no dimos changes:
 - `$XDG_STATE_HOME/dimos/runs/*.json` (the run registry) for status. dimos writes the entry once every module is built,
   which is how Desktop knows a launch finished starting.
 - `<checkout>/logs/<run_id>/main.jsonl` and `$XDG_STATE_HOME/dimos/logs/<run_id>/main.jsonl` for logs.
-- `scripts/install.sh --mode dev --project-dir <dir> --non-interactive --branch <version>` to install.
+- `scripts/install.sh --mode dev --project-dir <dir> --non-interactive --branch <version> --skip-tests` to install.
 
 ## Releasing
 

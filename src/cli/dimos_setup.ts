@@ -76,6 +76,9 @@ export async function setupDimos(options: DimosSetupOptions): Promise<void> {
         // the branch to `dev`, which would silently move a tag checkout onto dev
         "--branch",
         version,
+        // the 0.0.14 smoke test runs a blueprint with no time limit, so an unattended install never ends;
+        // running blueprints is Desktop's job anyway
+        "--skip-tests",
         ...options.installArgs,
     ]
     console.log(`Running dimos's installer: ${args.join(" ")}`)
