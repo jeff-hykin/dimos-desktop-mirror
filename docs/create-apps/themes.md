@@ -135,6 +135,43 @@ reads it again in the `storage` handler.
    no red), so pair it with words.
 7. **Keep controls above `var(--dim-inset-bottom)`.**
 
+## Checkboxes
+
+Don't ship a bare `<input type="checkbox">`: it ignores the skin and is a ~13px target, too small for a finger on a Steam
+Deck or a tablet. Use dim-app's `.dim-check` (a hidden input, a drawn `.box`, or `.ring` for a radio) and make the whole
+row the label, so a tap anywhere on it toggles the box:
+
+```html
+<label class="dim-check row-check">
+    <input type="checkbox" checked />
+    <span class="box"></span>
+    Auto-upload saved recordings
+</label>
+```
+
+```css
+/* a finger-sized target: the row, not the box */
+.row-check {
+    min-height: 40px;
+    padding: 0 6px;
+    gap: 12px;
+    border-radius: var(--radius);
+    user-select: none;
+}
+.row-check:hover {
+    background: var(--hover);
+}
+.row-check .box {
+    width: 22px;
+    height: 22px;
+}
+```
+
+Without dim-app, draw the same thing from tokens: hide the input (`position: absolute; opacity: 0`), give the `.box` a
+`var(--border-strong)` edge on `var(--card)`, fill it with `var(--primary)` when `input:checked + .box`, draw the tick in
+`var(--primary-fg)`, and show focus with `input:focus-visible + .box { box-shadow: 0 0 0 3px var(--ring-soft) }`. Both
+specimens show it in their skin ("Toggles, chips, status").
+
 ## The skins
 
 | id               | name           | look                                                                                  | page                              |
