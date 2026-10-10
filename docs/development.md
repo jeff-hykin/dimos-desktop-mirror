@@ -1,0 +1,59 @@
+# Development
+
+```sh
+deno task ui:build   # build the React UI into ui/dist (the binary embeds it)
+cargo run -- serve --no-service    # the server on :5555 without registering the boot service
+deno task ui:dev     # the UI with hot reload, forwarding /api, /dimos, /apps, /zenoh-gateway to :5555 (DESKTOP_API to change)
+cargo test           # unit tests (non-UI only), incl. the /dimos/ JSON shapes against a fake dimos checkout
+deno task ui:check   # type-check the UI
+deno task build      # ui:build + cargo build --release → target/release/dimos-desktop (one file)
+```
+
+Set `DIMOS_HOME=/some/dir` to keep a development or test instance out of `~/.dimos`. Such a scratch home sits beside the
+real one on its own: its boot service gets its own name (`org.dimensional.dimos-desktop-<dir>-<hash>`), dimcode's home
+and socket and dimos's run registry live under it (`DIMCODE_HOME`, `XDG_STATE_HOME`), `setup` takes a free port and
+leaves your shell's PATH alone (`--modify-path` to change it). Each variable set explicitly (`DIMOS_DESKTOP_SERVICE`,
+`DIMCODE_HOME`, `XDG_STATE_HOME`, `--port`) wins. `dimos-desktop uninstall --all --yes` removes it again (its dimcode
+gateway and dimos gateway stopped).
+
+## Layout
+
+| Path                   | What                                                                                              |
+| ---------------------- | ------------------------------------------------------------------------------------------------- |
+| `install.sh`           | what the README's one-liner runs: downloads this machine's binary, runs `dimos-desktop setup`     |
+| `src/main.rs`          | the CLI: `setup`, `uninstall`, `status`, `serve`, `service`, app `install`/`update`/…, `dimos …`  |
+| `src/setup.rs`         | installing Desktop itself, then dimos with dimos's own `scripts/install.sh`                       |
+| `src/service.rs`       | the boot service (launchd, systemd --user), re-checked on every `serve`                           |
+| `src/server/`          | the HTTP server: `/api` (Desktop), `/dimos` (tooling), `/apps` and the UI's files                 |
+| `src/dimos/`           | everything that talks to dimos: its CLI, run registry, log files, `introspect.py`                 |
+| `src/apps/`            | installing apps (git + `nix build .#dimosApp`), the catalog, running their `dimos-app-server`s    |
+| `src/shell/`           | shell commands run for apps and the installer, each session in one PTY (docs/shell.md)            |
+| `src/zenoh_gateway.rs` | the embedded zenoh-gateway apps use to reach dimos modules, served at `/zenoh-gateway`            |
+| `ui/`                  | the React + Vite UI, embedded into the binary                                                     |
+| `.github/`             | CI: checks, native builds of all four targets, installing on every GitHub runner; release on `v*` |
+
+## How Desktop drives dimos
+
+Only through what dimos 0.0.14 already has (see [api.md](api.md) for the `/dimos/` API on top):
+
+- `dimos list` (text) for blueprints; `introspect.py`, run with the checkout's python, for module streams and the
+  GlobalConfig schema.
+- `dimos [--key value ...] run <blueprint>` in the foreground in its own session, detached from Desktop. Not `--daemon`:
+  on macOS the daemon's forked build segfaults inside CoreFoundation. Stopping signals that process group; Desktop never
+  runs `dimos stop`, which could hit a run it didn't start.
+- `$XDG_STATE_HOME/dimos/runs/*.json` (the run registry) for status: dimos writes the entry once every module is built.
+- `<checkout>/logs/<run_id>/main.jsonl` and `$XDG_STATE_HOME/dimos/logs/<run_id>/main.jsonl` for logs.
+- `scripts/install.sh --mode dev --project-dir <dir> --branch <version> --skip-tests` to install.
+
+## Releasing
+
+Bump `version` in `Cargo.toml`, commit, then tag `v<version>` and push the tag. The release workflow builds all four
+binaries and attaches them and `install.sh` to a GitHub release in the private dimensionalOS/dimos-desktop, then copies it to this public mirror
+(jeff-hykin/dimos-desktop-mirror: releases and install.sh only, no source), which install.sh and the self-updater
+download from: once the binaries and arm bundles are out, again for the Intel Mac ones (`DESKTOP_MIRROR_TOKEN`, a
+fine-grained token with Contents write on the mirror). By hand: `scripts/mirror-release.sh v<version>`.
+
+dimos and dimcode aren't part of a Desktop release: Desktop installs their newest tag in its `dimos.yaml` `tags:`
+ranges. To ship a dimos or dimcode change to Desktop users, tag it (`desktop-gateway-v<x.y.z>` /
+`desktop-agent-v<x.y.z>`, [install.md](install.md#shipping-a-dimos-or-dimcode-change-to-desktop-users)); bump Desktop's
+range only for a contract change, in the Desktop release that speaks the new contract.

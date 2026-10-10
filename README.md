@@ -19,4 +19,6 @@ Install dimOS Desktop (Linux and macOS):
 curl -fsSL https://raw.githubusercontent.com/jeff-hykin/dimos-desktop-mirror/main/install.sh | bash
 ```
 
+Building an app: [docs/how-to.md](docs/how-to.md) (how do I notify, open an app, run a sudo command, ...). All the docs: [docs/](docs/).
+
 On a Steam Deck: [docs/steam-deck.md](docs/steam-deck.md) (launch it from Steam so the controls are a gamepad).
