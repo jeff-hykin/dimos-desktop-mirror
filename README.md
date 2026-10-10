@@ -4,6 +4,8 @@ dimOS Desktop is one app for running robots with [dimOS](https://github.com/dime
 One command installs dimos and everything it needs; then you pick a robot and launch it on the real hardware, a recording, or a simulator.
 It all runs in your browser: drive the robot, watch its 3D map and cameras, record runs, and add more apps.
 
+![The dimOS Desktop installer starting up](docs/media/installer_intro.webp)
+
 [![dimOS Desktop: install, pick a robot, a Go2 mapping an office in simulation](docs/media/demo.webp)](docs/media/demo.mp4?raw=true)
 
 Above, sped up: install, pick a robot, launch a Go2 in simulation, watch it map ([as a video file](docs/media/demo.mp4?raw=true)).
