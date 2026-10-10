@@ -5,9 +5,9 @@ The unified interface for controlling the physical world with [dimOS](https://gi
 ![The dimOS Desktop installer starting up](docs/media/installer_intro.webp)
 
 
-[![dimOS Desktop: install, pick a robot, a Go2 mapping an office in simulation](docs/media/demo.webp)](docs/media/demo.mp4?raw=true)
+[![dimOS Desktop: pick a robot and a blueprint, launch a Go2 in simulation, watch it map](docs/media/clips.webp)](docs/media/clips.mp4?raw=true)
 
-Above, sped up: install, pick a robot, launch a Go2 in simulation, watch it map ([as a video file](docs/media/demo.mp4?raw=true)).
+Above: pick a robot and a blueprint, launch a Go2 in simulation, watch it map ([as a video file](docs/media/clips.mp4?raw=true)).
 
 | Install | Pick a robot | Pick a blueprint |
 | --- | --- | --- |
@@ -22,6 +22,14 @@ curl -fsSL https://raw.githubusercontent.com/jeff-hykin/dimos-desktop-mirror/mai
 
 # Build Your Own App in Minutes!
 
-Building an app: [docs/how-to.md](docs/how-to.md) (how do I notify, open an app, run a sudo command, ...). All the docs: [docs/](docs/).
+Start from an example: [Make your own dimOS app](docs/create-apps/index.md).
+
+| Example                                                       | Stack                                                                                         | Pick it when                                                          |
+| ------------------------------------------------------------- | --------------------------------------------------------------------------------------------- | --------------------------------------------------------------------- |
+| [simple-html](https://github.com/jeff-hykin/dim-example-html) | one `frontend/index.html`, no build, no server                                                | the page can do tons: viewers, dashboards, teleop                     |
+| [deno-server](https://github.com/jeff-hykin/dim-example-deno) | React, Vite, Deno server + [zenoh-deno](https://github.com/jeff-hykin/zenoh-deno) (zero-copy) | read files, zero-copy zenoh topics, run parallel background jobs, etc |
+| [rust](https://github.com/jeff-hykin/dim-example-rust)        | Rust server, plain page                                                                       | Bluetooth scans, UART ports, heavy video processing, etc              |
+
+How do I notify, open an app, run a sudo command, ...: [docs/how-to.md](docs/how-to.md). All the docs: [docs/](docs/).
 
 On a Steam Deck: [docs/steam-deck.md](docs/steam-deck.md) (launch it from Steam so the controls are a gamepad).
