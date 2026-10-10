@@ -1,8 +1,6 @@
-# dimOS Desktop
+# DimOS Desktop
 
-dimOS Desktop is one app for running robots with [dimOS](https://github.com/dimensionalOS/dimos).
-One command installs dimos and everything it needs; then you pick a robot and launch it on the real hardware, a recording, or a simulator.
-It all runs in your browser: drive the robot, watch its 3D map and cameras, record runs, and add more apps.
+The unified interface for controlling the physical world with [dimOS](https://github.com/dimensionalOS/dimos). One command installs dimos and everything it needs; then you pick a robot and launch it on the real hardware, a recording, or a simulator. It all runs in your browser: drive the robot, watch its 3D map and cameras, record runs, and add more apps.
 
 ![The dimOS Desktop installer starting up](docs/media/installer_intro.webp)
 
@@ -15,12 +13,14 @@ Above, sped up: install, pick a robot, launch a Go2 in simulation, watch it map 
 | --- | --- | --- |
 | ![installer](docs/media/installer.jpg) | ![robot picker](docs/media/robot_picker.jpg) | ![blueprints](docs/media/blueprints.jpg) |
 
-Install dimOS Desktop (Linux and macOS):
+## Install
 
 ```sh
 # todo: switch to non-mirror once public
 curl -fsSL https://raw.githubusercontent.com/jeff-hykin/dimos-desktop-mirror/main/install.sh | bash
 ```
+
+# Build Your Own App in Minutes!
 
 Building an app: [docs/how-to.md](docs/how-to.md) (how do I notify, open an app, run a sudo command, ...). All the docs: [docs/](docs/).
 
