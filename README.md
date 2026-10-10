@@ -6,6 +6,7 @@ It all runs in your browser: drive the robot, watch its 3D map and cameras, reco
 
 ![The dimOS Desktop installer starting up](docs/media/installer_intro.webp)
 
+
 [![dimOS Desktop: install, pick a robot, a Go2 mapping an office in simulation](docs/media/demo.webp)](docs/media/demo.mp4?raw=true)
 
 Above, sped up: install, pick a robot, launch a Go2 in simulation, watch it map ([as a video file](docs/media/demo.mp4?raw=true)).
