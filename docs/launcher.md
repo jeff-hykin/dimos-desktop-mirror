@@ -97,14 +97,14 @@ which also fills in each GlobalConfig setting's type, default and choices by ref
 blueprint list in step with the registry. There are no tags, modes, groups or recommended apps any more: where a
 blueprint runs (Robot / Replay / Simulator) is a recommended setting like any other.
 
-Desktop reads it resolved (defaults applied, args inlined) from the dimos gateway's `GET /dimos/robots` when dimos's own
-(Python) server runs, else from the checkout's file (src/dimos/robots.rs, the same resolution; Desktop's built-in dimos
-server answers `/dimos/robots` with it), re-read when robots.json or all_blueprints.py changes. A blueprint robots.json
-doesn't describe (one outside the robot directories, or an older dimos without the file) is still listed, under "Other",
+Desktop reads it resolved (defaults applied, args inlined) from the dimos gateway's `GET /dimos/robots` (kept for a few
+seconds). A blueprint robots.json doesn't describe (one outside the robot directories) is still listed, under "Other",
 with its name and docstring.
 
-From the introspect.py scan (the code itself) the Launcher takes each blueprint's modules, skills and streams: the
-**topics** it provides (and `needs=cmd_vel` deep links), and "What's inside".
+From the gateway's catalog (`GET /dimos/catalog`: the code itself, imported in a child process) the Launcher takes each
+blueprint's modules, skills and streams: the **topics** it provides (and `needs=cmd_vel` deep links), and "What's
+inside". It's asked again when the gateway says the blueprints changed (its `blueprints` event, or a finished
+`discovery` scan); the gateway caches the catalog for up to 10 minutes.
 
 **search ranking**: exact name, then name prefix, then every word in the title/name, then its robot type, then
 description, modules and topics; ties go to starter picks, then robot order, then name.
@@ -113,7 +113,7 @@ description, modules and topics; ties go to starter picks, then robot order, the
 
 Two kinds of config, both from dimos's own schemas (LauncherConfig.tsx):
 
-- **Global**: dimos's `GlobalConfig` (`GET /dimos/global-config`: JSON Schema, defaults, Desktop's saved values), passed
+- **Global**: dimos's `GlobalConfig` (`GET /dimos/global-config`: JSON Schema, defaults, the saved values), passed
   as `dimos --key value run …`. Lists and objects are left out: `dimos` has no flag for them.
 - **Module**: each module's pydantic `config` in a blueprint (`GET /dimos/blueprints/{name}/config`), passed as
   `dimos run <bp> --<module>.<field>=<value>`, which is how `dimos run` addresses a module's config (by the module's
@@ -128,8 +128,10 @@ modules first, most relevant module first (until the dimos gateway ranks them pe
 blueprints use it, weighted down for modules every blueprint uses), each under its name; then the global config grouped
 by first word (`zenoh_*`, `rerun_*`, …), with one search over both. Inputs follow the schema: a switch for a boolean, a
 select for an enum, a number field, a text field (mono for paths and JSON); a value that differs from dimOS's default is
-marked and has a reset. A change is saved at once (config.yaml `dimos.global_config` /
-`dimos.module_config.<blueprint>`, both checked against the schema) and applies to every later launch. On a phone the
+marked and has a reset. A change is saved at once by the dimos gateway (`PUT /dimos/global-config`,
+`PUT /dimos/blueprints/{name}/config`, both checked against the schema; it keeps them in config.yaml
+`dimos.global_config` / `dimos.module_config.<blueprint>`, which Desktop itself leaves alone) and applies to every later
+launch. On a phone the
 column is a page behind the Config button.
 
 **Customize** (next to Launch) opens a sheet with the blueprint's config prefilled with what a launch would use now
@@ -180,10 +182,8 @@ to use?"** (ui/src/views/LauncherFirstRun.tsx; data in src/server/firstrun_api.r
 lasts for the browser session. Each step:
 
 1. **Pick**: a search field and big cards — "Custom / new robot" first, then every robot from the dimos gateway's
-   `GET /dimos/robots` (robots.json, in its order). A server without it gets a list read from the checkout's robot
-   folders (`dimos/[experimental/]robot/[<maker>/]<robot>/blueprints`), never one written in Desktop. Each robot's icon
-   is one of five drawings by its `type` (dog, wheeled, humanoid, arm, drone; a plain robot when the server doesn't
-   say), in a Portal and a Research version (ui/src/assets/robot_icons/; sources and licenses in docs/CREDITS.md).
+   `GET /dimos/robots` (robots.json, in its order; never a list written in Desktop). Each robot's icon is one of five
+   drawings by its `type` (dog, wheeled, humanoid, arm, drone; a plain robot when robots.json doesn't say), in a Portal and a Research version (ui/src/assets/robot_icons/; sources and licenses in docs/CREDITS.md).
 2. **Custom / new robot** renders the server's `GET /dimos/docs/custom-robot` (its HTML, scripts and handlers removed,
    links opening outside Desktop).
 3. **Any other robot** becomes the default robot with no question (`PUT /api/launcher/default-robot`, which also points
@@ -193,7 +193,7 @@ lasts for the browser session. Each step:
    no default, a dashed "Choose your robot" button there opens the picker and the list shows every robot's. Where to
    find an arg's value is a link beside that arg (robots.json `docs`).
 
-A dimos gateway without one of these endpoints (404) gets a sentence saying which, not an error.
+While the dimos gateway can't answer, these answer 503 with why.
 
 | Endpoint                                      | What                                                                                                       |
 | --------------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
@@ -206,8 +206,7 @@ A dimos gateway without one of these endpoints (404) gets a sentence saying whic
 
 `GET /api/launcher/import-problems` lists the blueprints that don't import and why: from the dimos gateway's discovery
 (`import_error`, `missing_module`, `optional_dependency`, and `suggested_extras`: the extras that would install the
-missing module, by its package's name or as a dependency in uv.lock), else from the Launcher catalog's errors (the
-module read from "No module named", no extras). The Launcher (ui/src/views/LauncherExtras.tsx) marks each in its list:
+missing module, by its package's name or as a dependency in uv.lock). The Launcher (ui/src/views/LauncherExtras.tsx) marks each in its list:
 "needs extras" when a package is missing (hover: which extras, which module), "doesn't load" for anything else (a
 blueprint that needs a robot IP to import), and says the same in the inspector. It refetches when the catalog rescans,
 every 2 s while discovery scans.
@@ -218,8 +217,8 @@ unticked, each with its download size; the missing module and the import error a
 `POST /dimos/extras/install {extras, app: "launcher"}`: the dimos gateway sends Desktop's shell tool
 ([shell.md](shell.md)) one command per ticked extra (`uv sync --locked --inexact --extra <x>` in a checkout; nix's
 CycloneDDS first when cyclonedds builds from source), shown over the Launcher, run one at a time once the user presses
-Run. When the session succeeds the Launcher asks for a rescan (`POST /dimos/discovery/refresh`), bumps its catalog (its
-stamp includes the venv's site-packages, so the catalog rescans too) and waits for discovery's key to change; if the
+Run. When the session succeeds the Launcher asks for a rescan (`POST /dimos/discovery/refresh`), asks for its catalog
+again and waits for discovery's key to change; if the
 blueprint now imports, it's launched with the args it was launched with; if not, the dialog says so with its new error
 and extras. A dimos gateway without `/dimos/extras` gets the missing module and a `uv sync --inexact --extra <name>`
 hint.

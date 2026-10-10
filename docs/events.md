@@ -115,10 +115,11 @@ the windows.
 
 `launch` (`{type, launch}` on a phase change), `log` (`{type, runId, record}`, warning and above), `upload`
 (`{type, upload}`), `uploads` (`{type, waitingForLogin, cleared?}`), `upload-removed` (`{type, id}`), `cloud-login`
-(`{type, login}`). dimos's own gateway (dimos/gateway/, started with `DIMOS_ZENOH_NAMESPACE=<ns>` and `ZENOH_CONNECT`)
-publishes them itself and says so in `GET /dimos/paths` (`server.zenohNamespace`); for Desktop's built-in server, and
-one that couldn't open a zenoh session (`zenohNamespace: null`), Desktop publishes them from the server's event stream,
-which it follows anyway. Either way each event arrives once. (The server's `GET /dimos/events` SSE is internal.)
+(`{type, login}`), `blueprints` (`{type, added, removed}`: the blueprint list changed) and `discovery`
+(`{type, status}`: the discovery scan's progress). The dimos gateway (dimos/gateway/, started with
+`DIMOS_ZENOH_NAMESPACE=<ns>` and `ZENOH_CONNECT`) publishes them itself. Desktop hears them on the same keys through its
+own zenoh session (zenoh-gateway's: none are heard while it's off) to post launch notifications, put failed uploads in
+the error feed and ask for the Launcher's catalog again when the blueprints change.
 
 ## The relay: `POST /desktop/frontend/<app>/<topic…>`
 

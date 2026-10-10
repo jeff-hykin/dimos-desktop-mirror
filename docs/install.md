@@ -164,7 +164,7 @@ to dimos's or dimcode's branches can't change what a released Desktop installs.
   `<releases>/download/<tag>/dimos.yaml`) until one fits; a newer one that doesn't is a warning saying why.
 - No tag in range, or none that fits: the install fails with "no <component> release works with this Desktop … Update
   dimOS Desktop (Settings → Updates, or `dimos-desktop update`)".
-- The install log shows each step (`→ picked desktop-gateway-v1.17.0 (0.0.14, 6515a88eb5)`); Settings shows the
+- The install log shows each step (`→ picked desktop-gateway-v1.19.0 (0.0.14, 3f4f046dcb)`); Settings shows the
   installed tag and commit under dimos ("installed tag") and Services ("agent tag"); `GET /api/info` has them in
   `components`.
 - Developers: `dimos-desktop install --dimos-ref <tag, branch or commit>` / `--dimcode-ref <…>` (dimcode's private
@@ -269,17 +269,17 @@ are kept unless `--purge-data`. Without a terminal it needs `--all` or `--deskto
 
 ## The dimos gateway
 
-`/dimos/` (docs/api.md) is served by its own process on a unix socket, which Desktop proxies and starts on demand:
-dimos's own (dimos/gateway/, in Python) when the dimos.yaml of the checkout in `dimos.dir` has a `start:`, else, as the
-fallback for older checkouts, Desktop's built-in one (`dimos-desktop dimos-server`, src/dimos/server.rs). Which one, and
-why, is in Desktop's log, `GET /api/info` (`dimosServer`), Settings and the server's own `GET /dimos/paths`
-(`server.kind`). Desktop restarts it when `dimos.dir` changes (Settings → dimos → Change…, `PUT /api/dimos-dir`: the old
-checkout's server is stopped first, and the Launcher's scan, robots.json, blueprint lists and app servers, which use the
-checkout's own `.venv`, are redone for the new one), when the checkout's dimos.yaml gains or loses its `start:`, when
-Desktop's binary is replaced (built-in) or a file of the checkout's dimos/gateway/ or dimos.yaml is newer than the
-server (dimos's own: a commit, a pull, an edit), and on `POST /api/dimos-server/restart` (Settings' Restart). dimos's
-own server publishes its events on zenoh itself (`server.zenohNamespace` in `/dimos/paths`); Desktop relays them only
-for one that doesn't.
+`/dimos/` (docs/api.md) is served by dimos's own gateway (dimos/gateway/, in Python), its own process on a unix socket,
+which Desktop proxies and starts on demand with the `start:` (and `socket:`) of the dimos.yaml in the checkout at
+`dimos.dir`. Desktop runs no dimos code of its own and reads nothing of the checkout but that dimos.yaml: everything
+else it shows about dimos (its version, blueprints, robots, runs, config, the python it runs with) is the gateway's
+answer. A checkout whose dimos.yaml has no `start:` (a dimos older than the gateway) can't be driven: `/dimos/*`
+answers 503, and Settings, `GET /api/info` (`dimosServer.error`, `dimos.error`) and Desktop's log say why. Desktop
+restarts the gateway when `dimos.dir` changes (Settings → dimos → Change…, `PUT /api/dimos-dir`: the old checkout's
+gateway is stopped first, and the Launcher's catalog, robots.json, blueprint lists and app servers are redone for the
+new one), when the checkout's dimos.yaml is newer than the gateway (a pull, a checkout of another tag), and on
+`POST /api/dimos-server/restart` (Settings' Restart). The gateway publishes its events on zenoh itself, under the
+namespace Desktop starts it with (`DIMOS_ZENOH_NAMESPACE`); Desktop hears them there too (docs/events.md).
 
 ## Binary caches
 

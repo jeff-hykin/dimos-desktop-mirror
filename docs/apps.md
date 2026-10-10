@@ -207,7 +207,7 @@ Desktop tells the app. It is the whole interface: no flags, no other variables.
 
 ```json
 {
-    "version": 2,
+    "version": 3,
     "name": "dim-controller-v2",
     "socket": "/Users/me/.dimos/desktop/sockets/dim-controller-v2.sock",
     "url": "http://127.0.0.1:7341/apps/dim-controller-v2/",
@@ -224,8 +224,8 @@ Desktop tells the app. It is the whole interface: no flags, no other variables.
 }
 ```
 
-- `version`: the shape of this object (2). New fields can appear without a bump; one changing meaning or going away
-  bumps it.
+- `version`: the shape of this object (3: `dimosPython` may be null). New fields can appear without a bump; one changing
+  meaning or going away bumps it.
 - `name`: the name the app was installed under. Two installs of one repo (`--name a`, `--name b`) are two apps, each
   with its own `name`, `socket`, `url`, `path` and `dataDir`.
 - `socket`: serve HTTP on this unix socket. Requests arrive with `path` (minus its trailing `/`) removed.
@@ -241,7 +241,8 @@ Desktop tells the app. It is the whole interface: no flags, no other variables.
 - `zenohNamespace`: Desktop's zenoh namespace (`desktop.namespace`); `zenohPrefix`: `<zenohNamespace>/apps/<name>`, this
   install's own keys. The app's pages hear its backend on `<zenohPrefix>/frontend/<topic…>`: publish there directly, or
   `POST ${desktopUrl}/desktop/frontend/${name}/<topic…>` and Desktop publishes the body ([events.md](events.md)).
-- `dimosDir`, `dimosPython`: the dimos checkout Desktop uses and its venv's python.
+- `dimosDir`, `dimosPython`: the dimos checkout Desktop uses and the python dimos runs with, as the dimos gateway's
+  `GET /dimos/python` says when the app starts (null when the gateway couldn't say; ask it again then).
 - `recordingsDir`: the shared recordings folder.
 
 ```js

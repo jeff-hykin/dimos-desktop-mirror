@@ -8,16 +8,16 @@ JSON everywhere unless noted. Errors: non-2xx with `{ "error": "<message>" }`.
 ## `/dimos/` — the dimos tooling API
 
 The only part of Desktop that depends on the dimos version. Apps (the Launcher included) use it instead of shelling out
-to dimos. It is served by **the dimos gateway**, its own process on a unix socket, which Desktop proxies `/dimos/` to
-and starts on demand with the `start:` command of the `dimos.yaml` in the checkout at `dimos.dir`: dimos's own gateway
-(dimos/gateway/), else Desktop's built-in fallback (`dimos-desktop dimos-server`, src/dimos/server.rs) for a checkout
-with no `start:` (docs/install.md).
+to dimos. It is served by **the dimos gateway**, dimos's own process (dimos/gateway/) on a unix socket, which Desktop
+proxies `/dimos/` to and starts on demand with the `start:` command of the `dimos.yaml` in the checkout at `dimos.dir`
+(docs/install.md). Desktop itself only talks to dimos through it. Its full reference is its own OpenAPI document,
+`GET /dimos/openapi.json`; the main routes:
 
 | Method + path                 | Body / query                                   | Response                                                                                           |
 | ----------------------------- | ---------------------------------------------- | -------------------------------------------------------------------------------------------------- |
 | `GET /dimos/info`             |                                                | `{ dir, found, installed, version, range, inRange }`                                               |
 | `GET /dimos/paths`            |                                                | `{ dimosDir, runsDir, logsDirs: [string], recordingsDir }`                                         |
-| `GET /dimos/blueprints`       | `?fresh=1` (else cached 60s)                   | `{ blueprints: [{ name, kind: "builtin" \| "external" }] }`                                        |
+| `GET /dimos/blueprints`       | `?fresh=1` (else cached 60s)                   | `{ blueprints: [{ name, kind: "builtin" \| "external", importable, ... }] }`                       |
 | `GET /dimos/blueprints/:name` |                                                | `{ name, modules: [{ name, class, streams: [{ name, type, direction: "in"\|"out"\|"inout" }] }] }` |
 | `GET /dimos/global-config`    |                                                | `{ schema, defaults, overrides }`. `schema` = JSON Schema of dimos's GlobalConfig                  |
 | `PUT /dimos/global-config`    | `{ overrides: { key: value } }`                | same as GET. Overrides are saved in config.yaml and passed as `--key value` on every launch        |
@@ -25,7 +25,6 @@ with no `start:` (docs/install.md).
 | `POST /dimos/runs`            | `{ blueprint, replay?: bool, overrides?: {} }` | `Launch`. `overrides`: `{ global?, modules? }` for this launch only (launcher.md#config)           |
 | `POST /dimos/runs/stop`       |                                                | `{ output }`                                                                                       |
 | `GET /dimos/runs/:runId/log`  | `?after=<offset>&level=<min>&q=<text>`         | `{ runId, records: [LogRecord], offset, loggers }` (`runId` may be `latest`)                       |
-| `GET /dimos/events`           | SSE (internal)                                 | Desktop follows it and publishes each event on zenoh, `<ns>/dimos/events/<type>` (events.md)       |
 | `GET /dimos/healthz`          |                                                | `ok`                                                                                               |
 | `POST /dimos/server/stop`     |                                                | `{ stopping: true }`: the server exits (Desktop starts it again when needed)                       |
 
@@ -37,9 +36,8 @@ When the dimos gateway can't be started, `/dimos/*` answers 503 `{ error }` sayi
 server's: a blueprint's modules (rarest first) beside its module graph (drawn from the wiring, with Desktop's
 `GET /api/topics/rates` on its topics while it runs), each module's streams, skills, RPC methods and code. Its files are
 `/dimos/blueprint_view/<file>`; it links Desktop's `/theme.css` and follows the skin in localStorage `portal.theme`. The
-bottom bar's Details frames it (ui/src/shell/BlueprintDetails.tsx) with Desktop's own Relaunch, Configure and Logs; a
-dimos gateway without it (older, or the built-in one) gets "Update dimos to see the blueprint view". The page and its
-parent talk over postMessage on Desktop's origin:
+bottom bar's Details frames it (ui/src/shell/BlueprintDetails.tsx) with Desktop's own Relaunch, Configure and Logs. The
+page and its parent talk over postMessage on Desktop's origin:
 
 | From → to      | Message                                             | Meaning                                                                  |
 | -------------- | --------------------------------------------------- | ------------------------------------------------------------------------ |
@@ -52,9 +50,7 @@ parent talk over postMessage on Desktop's origin:
 Uploads go to Dimensional cloud through dimos's own code (`dimos.cloud.data.CloudData().upload`, the same as
 `dimos upload`), and the login is `dimos login`'s device flow: the user approves a code in any signed-in browser, and
 the key is stored where dimos keeps it (keyring, else a 0600 file; `DIMOS_API_KEY` overrides). The dimos gateway runs
-`cloud.py` (src/dimos/, beside introspect.py) with the checkout's python; it reports progress as JSON lines, which the
-server turns into a smoothed speed and time left. `DESKTOP_UPLOAD_HELPER=<program>` replaces it (same arguments), for
-tests.
+the uploads and keeps their queue, with a smoothed speed and time left.
 
 | Method + path                   | Body / query                 | Response                                                                                     |
 | ------------------------------- | ---------------------------- | -------------------------------------------------------------------------------------------- |
@@ -271,7 +267,7 @@ type CatalogEntry = { name: string; title: string; description: string; url: str
 | `POST /api/notifications/clear`                                                       |                                                                                     | `{ ok }`: dismisses all                                                                                                                                                                                                                                                                             |
 | `POST /api/notifications/read`                                                        |                                                                                     | `{ ok }`: marks all read (opening the panel does)                                                                                                                                                                                                                                                   |
 | `GET /api/ui-settings`                                                                |                                                                                     | `UiSettings`                                                                                                                                                                                                                                                                                        |
-| `PUT /api/ui-settings`                                                                | a partial `UiSettings`, or the whole one sent back                                  | `UiSettings` (saved in config.yaml `ui:`, `zenoh_gateway.hardware_encode`, `dimos.global_config.robot_ip`)                                                                                                                                                                                          |
+| `PUT /api/ui-settings`                                                                | a partial `UiSettings`, or the whole one sent back                                  | `UiSettings` (saved in config.yaml `ui:` and `zenoh_gateway.hardware_encode`)                                                                                                                                                                                                                         |
 | `GET /api/hud`                                                                        |                                                                                     | `{ uptime, desktopUptime, robot: {name, ip} \| null, link, cpu, blueprint: {name, phase} \| null, dimosVersion }` (unknown = null)                                                                                                                                                                  |
 | `GET /api/search`                                                                     | `?q=&kinds=app,blueprint,module,topic,recording,setting,desktop&limit=8`            | `{ query, term, verb, results: [{ kind, title, meta, id }] }`: word-start matching; `open x` / `run x`                                                                                                                                                                                              |
 | `GET /api/topics/rates`                                                               |                                                                                     | `{ up, error?, topics: [{ topic, type, hz, bps, history }] }` busiest first (counted while asked, for 20 s)                                                                                                                                                                                         |
@@ -370,14 +366,14 @@ type UiSettings = {
 ### Desktop events (zenoh `<ns>/desktop/events/<type>`)
 
 Published on zenoh, one JSON object `{type, …}` per sample; pages hear them through zenoh-gateway
-([events.md](events.md)). `dimos` events go to `<ns>/dimos/events/<type>` unwrapped. (`GET /api/events`, the old SSE
-stream, is deprecated and internal, kept one release.)
+([events.md](events.md)). The dimos gateway publishes its own events on `<ns>/dimos/events/<type>`. (`GET /api/events`,
+the old SSE stream, is deprecated and internal, kept one release.)
 
 | `type`             | fields                                                     | when                                                                                                                           |
 | ------------------ | ---------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
 | `apps`             |                                                            | an app was installed, removed, updated, started or stopped                                                                     |
 | `endpoints`        | `app, added, removed` (`{method, path, description}` each) | an app's agent endpoints changed (install, update, uninstall, a rebuilt agent.json)                                            |
-| `blueprints`       | `added, removed` (names)                                   | the blueprint list changed (a file watcher on the checkout's blueprint sources and its venv's packages; after a dimos install) |
+| `blueprints`       | `added, removed` (names)                                   | the blueprint list changed (the dimos gateway's `blueprints` event, relayed)                                                   |
 | `runs`             |                                                            | a blueprint run started or stopped (from Desktop or a terminal)                                                                |
 | `notification`     | `notification`                                             | a new notification                                                                                                             |
 | `notifications`    |                                                            | some were dismissed or read                                                                                                    |
@@ -415,8 +411,8 @@ routers' source and fails on a route the document lacks). Each operation has `op
 - `x-mcp-tool`: the MCP tool(s) that do the same, e.g. `notify` for `POST /api/notifications`
 
 The group docs are in `tags[].description` (markdown, with `x-family`): how the dimos gateway is started and proxied,
-blueprint enumeration and the blueprint file watcher, runs and launch phases, logs, config introspection
-(introspect.py), cloud uploads; apps (install, update, serving), notifications, UI settings, the HUD, topics and
+blueprint enumeration and list changes, runs and launch phases, logs, config introspection, cloud uploads (all the dimos
+gateway's, which Desktop proxies); apps (install, update, serving), notifications, UI settings, the HUD, topics and
 zenoh-gateway, search, the event stream, the agent and MCP, auth, recordings, windows, errors, the installer, the
 Launcher and these endpoints. Desktop's own websocket (a shell session's terminal) and the deprecated SSE `/api/events`
 are internal to its UI and CLI: not in the document, and apps must not rely on them.

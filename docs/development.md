@@ -25,7 +25,7 @@ gateway and dimos gateway stopped).
 | `src/setup.rs`         | installing Desktop itself, then dimos with dimos's own `scripts/install.sh`                       |
 | `src/service.rs`       | the boot service (launchd, systemd --user), re-checked on every `serve`                           |
 | `src/server/`          | the HTTP server: `/api` (Desktop), `/dimos` (tooling), `/apps` and the UI's files                 |
-| `src/dimos/`           | everything that talks to dimos: its CLI, run registry, log files, `introspect.py`                 |
+| `src/dimos/`           | starting dimos's gateway (its dimos.yaml `start:`) and talking to it on its unix socket            |
 | `src/apps/`            | installing apps (git + `nix build .#dimosApp`), the catalog, running their `dimos-app-server`s    |
 | `src/shell/`           | shell commands run for apps and the installer, each session in one PTY (docs/shell.md)            |
 | `src/zenoh_gateway.rs` | the embedded zenoh-gateway apps use to reach dimos modules, served at `/zenoh-gateway`            |
@@ -34,16 +34,13 @@ gateway and dimos gateway stopped).
 
 ## How Desktop drives dimos
 
-Only through what dimos 0.0.14 already has (see [api.md](api.md) for the `/dimos/` API on top):
+Only through dimos's gateway ([api.md](api.md), the `/dimos/` API): Desktop runs no Python and reads nothing of the
+checkout but its `dimos.yaml`, the install contract ([install.md](install.md)):
 
-- `dimos list` (text) for blueprints; `introspect.py`, run with the checkout's python, for module streams and the
-  GlobalConfig schema.
-- `dimos [--key value ...] run <blueprint>` in the foreground in its own session, detached from Desktop. Not `--daemon`:
-  on macOS the daemon's forked build segfaults inside CoreFoundation. Stopping signals that process group; Desktop never
-  runs `dimos stop`, which could hit a run it didn't start.
-- `$XDG_STATE_HOME/dimos/runs/*.json` (the run registry) for status: dimos writes the entry once every module is built.
-- `<checkout>/logs/<run_id>/main.jsonl` and `$XDG_STATE_HOME/dimos/logs/<run_id>/main.jsonl` for logs.
-- `scripts/install.sh --mode dev --project-dir <dir> --branch <version> --skip-tests` to install.
+- `install:` installs dimos (dimos's own `scripts/install.sh`), `start:` starts the gateway and `socket:` says where it
+  listens. Everything else (blueprints, the catalog, robots.json, runs and launches, logs, config, uploads, the python
+  dimos runs with) is the gateway's answer.
+- The gateway's events come over zenoh (`<ns>/dimos/events/<type>`, [events.md](events.md)).
 
 ## Releasing
 

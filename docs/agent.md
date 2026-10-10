@@ -223,10 +223,10 @@ the app's own state, e.g. the Launcher's filters or the Map Editor's open map.
 ## Built-in: the Launcher
 
 The Launcher ([launcher.md](launcher.md)) lists dimos blueprints as cards (title, plain description, robot group,
-topics, modules, recommended settings), with modules and skills behind "List". Its data comes from
-`introspect.py catalog` (imports every blueprint once, re-run when the checkout's `all_blueprints.py` changes): each
-blueprint's robot comes from its module path (`dimos.robot.unitree.go2…` → `go2`), each module's robots are those of the
-blueprints that use it, and a skill inherits its module's. Its state (`query`, `kind`, `robot`, `all`, `selected`, and
+topics, modules, recommended settings), with modules and skills behind "List". Its data comes from the dimos gateway's
+`GET /dimos/catalog` (it imports every blueprint once; asked again when the gateway says the blueprints changed): each
+blueprint's robot is the one robots.json lists it under (else whose folder holds its file), each module's robots are
+those of the blueprints that use it, and a skill inherits its module's. Its state (`query`, `kind`, `robot`, `all`, `selected`, and
 `stream`: only what has a module with an input or output whose name contains it, e.g. `cmd_vel` finds `tele_cmd_vel`)
 lives in Desktop: `PUT /api/launcher/state` changes it and every open Launcher follows (an `{type: "launcher"}` event on
 `<ns>/desktop/events/launcher`); the page writes the user's own changes back.
