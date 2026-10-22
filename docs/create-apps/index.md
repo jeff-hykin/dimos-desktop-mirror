@@ -29,7 +29,7 @@ There's a [for-agents.md](for-agents.md) if you want to offload the work. They'r
 
 ![The Install From URL box in the App Store](images/install-from-url.png)
 
-Push a change, then **Update** it in the App Store. No `vX.Y.Z` tag yet: it installs the default branch.
+Just push a `vX.Y.Z` github tag for people to see that you updated your app. 
 
 ### There's a few tools in the toolbox
 
