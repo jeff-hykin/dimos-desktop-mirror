@@ -161,7 +161,7 @@ caches:
 This has to work from your repo's root, on Mac and Linux:
 
 ```sh
-nix build .#dimosApp
+nix build '.#dimosApp'
 ```
 
 `./result` then holds either a `bin/dimos-app-server` (Desktop runs it, with `DIMOS_APP` set) or an `index.html` (a page
