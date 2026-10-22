@@ -31,7 +31,7 @@ There's a [for-agents.md](for-agents.md) if you want to offload the work. They'r
 
 Just push a `vX.Y.Z` github tag for people to see that you updated your app. 
 
-### There's a few tools in the toolbox
+### Tools for your app
 
 - Subscribe or publish topics? The
   [zenoh-gateway](https://github.com/jeff-hykin/zenoh-gateway/blob/main/docs/how-to.md).
