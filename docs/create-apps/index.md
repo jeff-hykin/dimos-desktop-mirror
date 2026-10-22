@@ -167,8 +167,7 @@ nix build '.#dimosApp'
 `./result` then holds either a `bin/dimos-app-server` (Desktop runs it, with `DIMOS_APP` set) or an `index.html` (a page
 with no server).
 
-Anything nix can build can be a dependency: Python with CUDA, ROS, a Rust crate with C libraries, a model file, a pinned
-compiler. Put it in the flake and the user never installs it by hand. Start from an example's `flake.nix`.
+Anything nix can build can be a dependency: Python with CUDA, ffmpeg, ROS, a Rust crate with C libraries, anything.
 
 ## 7. Checklist
 
