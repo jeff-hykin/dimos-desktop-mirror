@@ -156,9 +156,6 @@ caches:
       key: "your-cache.cachix.org-1:..."
 ```
 
-The App Store gives users the one sudo command to trust it. Cross builds for robots: `nix.cache` in
-[apps.md](../apps.md).
-
 ## 6. flake.nix
 
 This has to work from your repo's root, on Mac and Linux:
