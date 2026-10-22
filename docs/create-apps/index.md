@@ -41,7 +41,7 @@ Push a change, then **Update** it in the App Store. No `vX.Y.Z` tag yet: it inst
   [dimos gateway](https://github.com/dimensionalOS/dimos/blob/jeff/feat/dimos_server/docs/usage/gateway-how-to.md).
 - Notifications, opening apps, Desktop events? The [desktop gateway](../how-to.md).
 - Want Desktop's agent to call your app? The agentic gateway ([agent.md](../agent.md)): list your endpoints under
-  `provides:` (§4).
+  `provides:` (see [Offer an API](#4-offer-an-api)).
 
 ## 3. Examples
 
