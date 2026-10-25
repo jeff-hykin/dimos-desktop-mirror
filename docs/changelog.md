@@ -17,7 +17,7 @@ Three version numbers decide what an app can use, and they move independently:
 file at a newer spec minor still installs on an older Desktop. So nothing here is urgent; it is what to pick up when
 you next touch an app. The one thing that *is* worth doing promptly is anything under **Do this** below.
 
-## Desktop 0.2.228 · spec v1.5 · dim-app v0.26.0 · gateway API 8.1.0
+## Desktop 0.2.229 · spec v1.5 · dim-app v0.26.0 · gateway API 8.2.0
 
 **Do this:** add `uses: <provider>: env:` to your `dimos.yaml` listing the `DIMOS_APP` values your server reads, and
 stop printing `DIMOS_APP.secrets`.
@@ -45,6 +45,10 @@ stop printing `DIMOS_APP.secrets`.
   option on the watchers rather than two functions: eager (the default) re-asks at once and hands the callback the
   value, `{ eager: false }` calls back with `null` and leaves the round trip to your next read.
 - **dim-app `emptyState`** actions take a `ui` name, which becomes the button's `data-ui` for a press log.
+- Desktop **0.2.228** is the zenoh-gateway 0.5.32 release: every encoded message reaching a page carries its own
+  `msg.header` (`stamp`, `frameId`, `seq`) on clouds, depth, images, video and audio, and `subscribe(key, { metadata:
+  false })` opts out. It also moved the dimos gateway into Desktop's own copy of its `desktop-gateway` tag, so a dev
+  branch in your checkout can no longer break the gateway that serves it. Nothing for an app to do.
 - `dimos-desktop app check` reports a **build manifest whose version disagrees with `dimos.yaml`'s** (0.2.227). That
   number is what your app reports of itself: `CARGO_PKG_VERSION` in a log line, `app_version` in every recording's
   metadata. If you bump only `dimos.yaml` on release, the crate silently rots — dim-go2-dash stamped `0.5.37` onto
