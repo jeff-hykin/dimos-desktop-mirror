@@ -311,8 +311,7 @@ Desktop tells the app. It is the whole interface: no flags, no other variables.
     "dimosPython": "/Users/me/dimos/.venv/bin/python",
     "recordingsDir": "/Users/me/.dimos/recordings",
     "machineId": "4f1c9b2e8a7d46f0b3e5c1a9d7b2e8a7",
-    "secrets": { "zenohGatewayToken": "dim-controller-v2.7f3c…" },
-    "overrides": {}
+    "secrets": { "zenohGatewayToken": "dim-controller-v2.7f3c…" }
 }
 ```
 
@@ -351,10 +350,6 @@ Desktop tells the app. It is the whole interface: no flags, no other variables.
   which is also still beside it for older apps. Apps print their whole `DIMOS_APP` at startup, which is exactly why
   Desktop has to redact that token out of the log it serves; a section an app skips whole is what keeps the next secret
   out of a log without Desktop having to learn its shape.
-- `overrides`: config paths this app is to run with instead of its own config's, for debugging — **this app's only**.
-  Desktop keeps the envelope that names the other components, so an app never receives, and so can never pass on, a
-  section meant for something else. Keys are config paths, never environment variable names. An override is never
-  saved to a file by whoever honours it.
 - An app reads `DIMOS_APP` and the gateways, and **never `DIMOS_HOME`**: where things are is Desktop's answer to give,
   and a path an app worked out itself is a second answer that will drift from the first.
 
