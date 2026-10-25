@@ -1,7 +1,7 @@
 # Apps
 
 New to apps? Start with the for-humans guide, [create-apps/index.md](create-apps/index.md), and its three example repos.
-This page is the reference.
+This page is the reference. Keeping an app current with a newer Desktop: [changelog.md](changelog.md).
 
 An app is a git repository with a `dimos.yaml` at its root. Desktop clones it to `~/.dimos/apps/<name>`, builds it with
 nix, and shows it in the side rail.

@@ -32,4 +32,7 @@ Start from an example: [Make your own dimOS app](docs/create-apps/index.md).
 
 How do I notify, open an app, run a sudo command, ...: [docs/how-to.md](docs/how-to.md). All the docs: [docs/](docs/).
 
+Keeping an app up to date: [docs/changelog.md](docs/changelog.md) — what each release asks of an app, and what to do
+about it. A newer Desktop never breaks an app, so it is what to pick up when you next touch one.
+
 On a Steam Deck: [docs/steam-deck.md](docs/steam-deck.md) (launch it from Steam so the controls are a gamepad).
