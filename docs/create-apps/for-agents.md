@@ -63,6 +63,11 @@ The user may paste Desktop's **Copy message**: it names the app, the refused `ME
 (`dimos.yaml`) and the YAML to add. Merge it into the keys already there (one `uses:`, one `provides:`), run
 `dimos-desktop app check .`, commit, push, and tag. If the call shouldn't happen at all, remove the call instead.
 
+## On a robot
+
+Never build an app on a robot's computer (Jetson, Raspberry Pi) to try a change: cross compile a debug build on your
+own machine, `rsync` it over and hot-load it ([edge-compute.md](edge-compute.md)).
+
 ## Useful endpoints
 
 - `GET /dimos/blueprints`, `GET /dimos/blueprints/<name>` (modules, their streams and types), `GET /dimos/runs`,

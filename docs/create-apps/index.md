@@ -11,6 +11,8 @@ Here's three example apps:
 There's a [for-agents.md](for-agents.md) if you want to offload the work. They're especially good at following the
 [themes guide](themes.md) and [icon style guide](make-an-icon.md).
 
+Trying a change on a robot (a Jetson, a Raspberry Pi)? Don't build on it: [edge-compute.md](edge-compute.md).
+
 ## 1. Required Stuff
 
 1. A git repo
