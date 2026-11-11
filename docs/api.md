@@ -53,6 +53,13 @@ Desktop's origin:
 | Desktop → view | `{ type: "dimos:open-in-editor-result", ok, text }` | what that ran (`opened: <command>`), or why it couldn't                              |
 | view → Desktop | `{ type: "dimos:close" }`                           | its ✕, or Escape with nothing left to step back from: the modal closes               |
 
+### The standalone app window
+
+`/?view=standalone&app=<app>` is an app framed alone with Desktop's notifications over it (`dimos-desktop app
+standalone`, [apps.md](apps.md#an-app-in-a-window-of-its-own-app-standalone)). The page says it's open with
+`POST /gateways/desktop/ui/standalone/{id}` `{ app }` every `standalone.heartbeat-s` and `{ app, closed: true }` as it
+goes (internal: not in /openapi.json); the light Desktop that command starts stops when none is left.
+
 ### Dimensional cloud: login and uploads
 
 Uploads go to Dimensional cloud through dimos's own code (`dimos.cloud.data.CloudData().upload`, the same as

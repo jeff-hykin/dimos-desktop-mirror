@@ -457,6 +457,37 @@ on screen. Canvases are copied in a frame right after the page draws, so a WebGL
 comes out too, as long as the page draws within 0.4 s. A page that draws only on change (a dirty flag) draws once when
 asked, or its 3D comes out empty while nothing moves: `addEventListener("dimos-capture", () => viewer.requestRender())`.
 
+## An app in a window of its own: `app standalone`
+
+`dimos-desktop app standalone <app>` opens an installed app as its own window, without Desktop's shell around it:
+`/?view=standalone&app=<app>` frames the app's page as the shell does (same origin, its `dimosShell` messages and
+`dimos-inset` still answered) and shows nothing of Desktop's but its notifications, the banners as they arrive and the
+panel of them all. Nothing in the window takes a click: moving the pointer **fast** into the window's top-right corner
+opens the panel, while moving there slowly is reaching for what the app has in that corner, and the click goes through.
+The panel closes on Esc, a click away or the pointer leaving it. A notification's button for this app opens it here;
+one for another app, the chat or a run's logs opens Desktop in the browser.
+
+If Desktop answers on its port, it serves the window. If not, the command starts a light Desktop on that port for it:
+the same routes, but only this app's server and those of the apps it `uses:`, the dimos gateway only when one of them
+uses it, the zenoh-gateway unless a compatible one already answers on `zenoh_gateway.external_port`, and no boot
+service, shell tool port, Launcher scan or update chores. It stops once its last window has closed (each window says
+it's open every `heartbeat-s`). The window is a Chrome, Chromium, Brave or Edge app window (`--app=`, a profile of its
+own per app under `~/.dimos/desktop/standalone/`), else a tab of the default browser. `--install` adds a launcher that
+runs the command: `~/Applications/<title>.app` (the app's icon when `rsvg-convert` is there to draw it) or an app-menu
+entry on Linux. `--no-window` prints the URL and the window's command instead of opening it.
+
+Its settings are config.yaml's `standalone:` (`GET /gateways/desktop/settings`, read again on a `settings` event):
+
+| Key                    | Default | What                                                                           |
+| ---------------------- | ------- | ------------------------------------------------------------------------------ |
+| `hot-corner-px`        | 48      | the corner's square (px)                                                       |
+| `hot-corner-speed`     | 1.0     | px/ms: at least this fast into the corner opens the notifications              |
+| `hot-corner-sample-ms` | 100     | the speed is over the pointer's moves in this many ms                          |
+| `heartbeat-s`          | 10      | how often a window says it's open                                              |
+| `idle-exit-s`          | 90      | the light Desktop stops when no window has said so for this long               |
+| `closed-exit-s`        | 3       | ...or this long after its last window closed                                   |
+| `browser`              | (empty) | the window's browser, a path or a command; empty: the first one found          |
+
 ## Shell commands (sudo too)
 
 An app never runs privileged commands itself: it asks Desktop with `POST /gateways/desktop/ui/shell` (a title, a
