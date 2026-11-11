@@ -78,6 +78,7 @@ Every event payload repeats its type inside (`{"type": "apps"}` on `<ns>/desktop
 | `notification`     | `{type, notification}`: a new notification (the whole object)           | —                                |
 | `notifications`    | `{type}`: some were read, dismissed or cleared                          | `GET /api/notifications`         |
 | `ui-settings`      | `{type, settings}`: the whole `GET /api/ui-settings` object             | —                                |
+| `settings`         | `{type}`: Desktop's settings were saved                                 | `GET /gateways/desktop/settings` |
 | `install`          | `{type, status}`: installer progress (the `GET /api/install` object)    | —                                |
 | `shell`            | `{type, session}`: a shell session changed (no command output)          | `GET /api/desktop/shell/<id>`    |
 | `recordings`       | `{type}`: a recording was renamed, deleted or added                     | `GET /recordings`                |
